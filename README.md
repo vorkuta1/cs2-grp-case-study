@@ -31,12 +31,19 @@ This repo demonstrates the same system design decisions: **normalize, de-bias, s
    - net-of-fees
    - currency to USD (ECB FX by default)
    - optional implied FX basis per venue
-3. Compute a **Global Reference Price (GRP)** via weighted median.
-4. Apply **Feature Multipliers** to get a specific **Model Price** (for float, pattern, stickers).
+3. Compute a **Global Reference Price (GRP)** via weighted median:
+   \[ P^{GRP} = \operatorname{wMedian}(\{P_{net}\}, \{Weights\}) \]
+4. Apply **Feature Multipliers** to compute a **Model Price**:
+   \[ P^{model} = P^{GRP} \cdot M_{float} \cdot M_{pattern} \cdot M_{stickers} \]
+   - *Float*: Tri-phase curve (Perfection, Wear Buckets, High-Float).
+   - *Pattern*: Tier-based multipliers (e.g., Blue Gem).
+   - *Stickers*: Scrap value + Synergy premium.
 5. Score listings with an **Opportunity Score**:
-   - edge vs Model Price
-   - liquidity haircut (time-to-sell proxy)
-   - venue risk penalty (configurable)
+   \[ Score = Edge \cdot H_{liquidity} \cdot H_{lock} \cdot H_{risk} \]
+   - *Edge*: Model Price vs Net Ask.
+   - *Haircuts*: Time-to-sell, inventory lockup, and venue risk.
+
+> Full mathematical details in [`docs/quant-model.md`](docs/quant-model.md).
 
 ## Quickstart
 
