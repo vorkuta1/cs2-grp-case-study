@@ -24,7 +24,7 @@ This allows modeling "Steam USD" separate from "Cash USD".
 We interpret persistent deviations in cross-venue arbitrage intervals as an implied currency basis (CNY vs USD):
 
 $$
-Basis_{FX}(t)=\operatorname{wMedian}\left(\frac{p^{net}_{CN}}{p^{net}_{US}}\right) - 1
+Basis_{FX}(t)=\text{wMedian}\left(\frac{p^{net}_{CN}}{p^{net}_{US}}\right) - 1
 $$
 
 ## 2. Global Reference Price (GRP)
@@ -42,7 +42,7 @@ $$
 ### 2.2 Aggregation
 
 $$
-P^{GRP}(i,t)=\operatorname{wMedian}\big(\{p^{net}_{m}\},\{w_m\}\big)
+P^{GRP}(i,t)=\text{wMedian}\big(\{p^{net}_{m}\},\{w_m\}\big)
 $$
 
 Weighted median is preferred over mean to reject outliers without explicit filtering thresholds.
