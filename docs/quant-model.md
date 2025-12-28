@@ -57,10 +57,10 @@ $$
 
 ### 3.1 Tri-Phase Float Curve ($M_{float}$)
 1.  **Phase I (Perfection)**: Exponential premium for $f \to 0$.
-    $ M(f) = 1 + \alpha e^{-\beta f} $
+    $M(f) = 1 + \alpha e^{-\beta f}$
 2.  **Phase II (Wear Buckets)**: Standard market pricing (flat 1.0 multiplier on bucket-specific GRP).
 3.  **Phase III (High-Float)**: Scarcity premium for maximum wear caps.
-    $ M(f) = 1 + \gamma e^{\delta(f-f_2)} $
+    $M(f) = 1 + \gamma e^{\delta(f-f_2)}$
 
 ### 3.2 Pattern Tiers ($M_{pattern}$)
 Algorithmic lookup based on seed `k`:
@@ -83,11 +83,11 @@ $$
 For items that can be created via Trade Up Contracts:
 
 -   **Input Cost**: Cost to acquire 10 (or 5) inputs.
-    $ Cost_{in} = N_{in} \cdot P^{GRP}(InputClass) + OpsCost $
+    $Cost_{in} = N_{in} \cdot P^{GRP}(InputClass) + OpsCost$
 -   **Output EV**: Expected value of outcomes.
-    $ EV_{out} = \sum P(outcome_i) \cdot P^{GRP}(outcome_i) $
+    $EV_{out} = \sum P(outcome_i) \cdot P^{GRP}(outcome_i)$
 -   **Manufacturing Edge**:
-    $ Edge = EV_{out} - Cost_{in} $
+    $Edge = EV_{out} - Cost_{in}$
 
 This effectively sets a "floor" price for inputs and a "ceiling" for outputs (arbitrageable if violated).
 
