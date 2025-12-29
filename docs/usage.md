@@ -17,12 +17,13 @@ uv sync  # or install dependencies manually
 Compute the feature-adjusted **Model Price** for a hypothetical item.
 
 ```bash
-uv run cs2arb features score-listing --base-price 100.0 --float-val 0.001
+uv run cs2arb features score-listing --base-price 100.0 --float-val 0.001 --rarity "Restricted"
 ```
 
 Options:
 - `--base-price`: The GRP (Global Reference Price) for the generic item.
 - `--float-val`: The specific float of the listing.
+- `--rarity`: Item rarity (e.g. "Covert", "Restricted").
 - `--seed`: Pattern seed (optional).
 - `--stickers-json`: JSON string representing stickers, e.g. `[{"id": 123, "slot": 0, "wear": 0}]`.
 
@@ -47,7 +48,7 @@ uv run cs2arb manufacturing analyze \
   --rarity "Covert"
 ```
 
-Calculates Input Cost, Output EV, and theoretical Edge.
+Calculates Input Cost, Output EV, and theoretical Edge. **Note**: You must manually supply the `output-prices` representing the potential universe of outcomes for the specific input collection(s) used. Automatic collection lookup is planned.
 
 ### 3. End-to-End Demo (`demo run`)
 
