@@ -7,11 +7,11 @@ a small, testable pricing engine with clear module boundaries (markets / FX / pr
 
 ```mermaid
 flowchart LR
-  A[Market adapters\nSteam / Buff / ...] -->|price prints & listings| B[Normalizer\nfees + FX + settlement haircuts]
-  B --> C[GRP Engine\nweighted median]
-  C --> D[Feature models\nfloat/pattern/sticker]
-  D --> E[Opportunity Scorer\nedge x liquidity]
-  E --> F[Outputs\nconsole / parquet / sqlite]
+  A["Market adapters<br/>Steam / Buff / ..."] -->|price prints & listings| B["Normalizer<br/>fees + FX + settlement haircuts"]
+  B --> C["GRP Engine<br/>weighted median"]
+  C --> D["Feature models<br/>float/pattern/sticker"]
+  D --> E["Opportunity Scorer<br/>edge x liquidity"]
+  E --> F["Outputs<br/>console / parquet / sqlite"]
 ```
 
 ## Currency layer
@@ -24,9 +24,9 @@ Two distinct FX concepts are modeled:
 
 ```mermaid
 flowchart TB
-  ECB[ECB EUR reference rates] --> FX1[Official FX table]
-  Bench[Benchmark basket\nhigh-liquidity items] --> IFX[Implied FX estimator]
-  FX1 --> Norm[Currency normalization]
+  ECB["ECB EUR reference rates"] --> FX1["Official FX table"]
+  Bench["Benchmark basket<br/>high-liquidity items"] --> IFX["Implied FX estimator"]
+  FX1 --> Norm["Currency normalization"]
   IFX --> Norm
-  Norm --> GRP[Global Reference Price]
+  Norm --> GRP["Global Reference Price"]
 ```
