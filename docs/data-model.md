@@ -4,9 +4,10 @@ This engine uses two primary record types:
 
 ## PricePrint
 
-A *trade print* or *best-available quote* (depending on what the source provides).
+A _trade print_ or _best-available quote_ (depending on what the source provides).
 
 Fields:
+
 - `market`: e.g. `steam`, `buff163`
 - `item_key`: canonical identifier (weapon + finish + special flags + wear bucket + seed class)
 - `currency`: ISO 4217 (e.g., `USD`, `EUR`, `CNY`)
@@ -20,6 +21,7 @@ Fields:
 An individual listing we might buy (ask) or sell (bid).
 
 Fields:
+
 - `market`, `listing_id`, `item_key`, `currency`, `ask`, `ts`
 - optional microstructure fields: `age_seconds`, `seller_reputation`, etc.
 

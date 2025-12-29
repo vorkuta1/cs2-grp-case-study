@@ -6,6 +6,7 @@ The domain is CS2 skins; the value is the **market understanding + data engineer
 FX normalization, fees, robust aggregation, caching, and a clean module boundary design.
 
 **New in v0.2**:
+
 - **Feature Model**: Tri-phase float curves, pattern tiers, and sticker valuations.
 - **Manufacturing Anchor**: Input-basket economics for trade-up contracts ("crafting").
 - **Simulated Markets**: File-based adapters for Steam/Buff to enable consistent testing.
@@ -34,13 +35,13 @@ This repo demonstrates the same system design decisions: **normalize, de-bias, s
    $P^{GRP} = \text{wMedian}(\{P_{net}\}, \{Weights\})$
 4. Apply **Feature Multipliers** to compute a **Model Price**:
    $P^{model} = P^{GRP} \cdot M_{float} \cdot M_{pattern} \cdot M_{stickers}$
-   - *Float*: Tri-phase curve (Perfection, Wear Buckets, High-Float).
-   - *Pattern*: Tier-based multipliers (e.g., Blue Gem).
-   - *Stickers*: Scrap value + Synergy premium.
+   - _Float_: Tri-phase curve (Perfection, Wear Buckets, High-Float).
+   - _Pattern_: Tier-based multipliers (e.g., Blue Gem).
+   - _Stickers_: Scrap value + Synergy premium.
 5. Score listings with an **Opportunity Score**:
    $Score = Edge \cdot H_{liquidity} \cdot H_{lock} \cdot H_{risk}$
-   - *Edge*: Model Price vs Net Ask.
-   - *Haircuts*: Time-to-sell, inventory lockup, and venue risk.
+   - _Edge_: Model Price vs Net Ask.
+   - _Haircuts_: Time-to-sell, inventory lockup, and venue risk.
 
 > Full mathematical details in [`docs/quant-model.md`](docs/quant-model.md).
 

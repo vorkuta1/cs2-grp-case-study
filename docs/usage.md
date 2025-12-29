@@ -21,6 +21,7 @@ uv run cs2arb features score-listing --base-price 100.0 --float-val 0.001 --rari
 ```
 
 Options:
+
 - `--base-price`: The GRP (Global Reference Price) for the generic item.
 - `--float-val`: The specific float of the listing.
 - `--rarity`: Item rarity (e.g. "Covert", "Restricted").
@@ -61,6 +62,7 @@ uv run cs2arb demo run --prices data/demo_prices.json --listings data/demo_listi
 ## Examples
 
 ### Low Float Premier
+
 A "Triple Zero" float (0.000x) significantly boosts the model price via the Phase I feature curve.
 
 ```bash
@@ -69,6 +71,7 @@ uv run cs2arb features score-listing --base-price 100 --float-val 0.0005
 ```
 
 ### High Float Anomaly
+
 Some skins have a "Black Scope" or similar high-float feature (Phase III).
 
 ```bash
