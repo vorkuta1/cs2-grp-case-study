@@ -1,7 +1,6 @@
 # CS2 GRP Case Study
 
-A case study for **multi-venue, multi-currency price normalization** and opportunity
-ranking in an illiquid market.
+A case study for **multi-venue, multi-currency price normalization** and opportunity ranking in an illiquid market.
 
 The domain is CS2 skins; the value is the **market understanding + data engineering**:
 FX normalization, fees, robust aggregation, caching, and a clean module boundary design.
@@ -16,10 +15,10 @@ FX normalization, fees, robust aggregation, caching, and a clean module boundary
 If you strip the paint off the skins:
 
 - marketplaces = exchanges / brokers
-- Steam Wallet = restricted settlement currency
+- Steam Wallet = restricted settlement currency (Steam USD $\neq$ Cash USD)
 - fees = transaction costs
 - trade holds = inventory carry / settlement delay
-- Covert → Gold = input→output manufacturing spread
+- Covert $\to$ Gold = input $\to$ output manufacturing spread
 - regional basis (West vs China) = geographic arbitrage / basis trading
 
 This repo demonstrates the same system design decisions: **normalize, de-bias, score, and rank**.
@@ -30,7 +29,7 @@ This repo demonstrates the same system design decisions: **normalize, de-bias, s
 2. Normalize:
    - net-of-fees
    - currency to USD (ECB FX by default)
-   - optional implied FX basis per venue
+   - optional implied FX basis per venue (treating restricted usage currencies like Steam Wallet separately)
 3. Compute a **Global Reference Price (GRP)** via weighted median:
    $P^{GRP} = \text{wMedian}(\{P_{net}\}, \{Weights\})$
 4. Apply **Feature Multipliers** to compute a **Model Price**:
@@ -93,103 +92,6 @@ uv run cs2arb manufacturing analyze --input-prices "10,10,10" --output-prices "5
   - `scoring/` – opportunity score
   - `storage/` – sqlite cache
 - `data/` – fixtures (safe, fake-but-plausible numbers)
-
-## Disclaimer
-
-This project is for engineering demonstration and research.
-It does not automate trades, does not bypass platform protections, and is not financial advice.
-
-A case study for **multi-venue, multi-currency price normalization** and opportunity
-ranking in an illiquid market.
-
-The domain is CS2 skins; the value is the **market understanding + data engineering**:
-FX normalization, fees, robust aggregation, caching, and a clean module boundary design.
-
-## Why it’s relevant to commodities / physical trade
-
-If you strip the paint off the skins:
-
-- marketplaces = exchanges / brokers
-- Steam Wallet = restricted settlement currency
-- fees = transaction costs
-- trade holds = inventory carry / settlement delay
-- Covert → Gold = input→output manufacturing spread
-- regional basis (West vs China) = geographic arbitrage / basis trading
-
-This repo demonstrates the same system design decisions: **normalize, de-bias, score, and rank**.
-
-## What it does
-
-1. Ingest price prints and listings from multiple venues (demo adapter included).
-2. Normalize:
-   - net-of-fees
-   - currency to USD (ECB FX by default)
-   - optional implied FX basis per venue
-3. Compute a **Global Reference Price (GRP)** via weighted median.
-4. Score listings with an **Opportunity Score**:
-   - edge vs GRP
-   - liquidity haircut (time-to-sell proxy)
-   - venue risk penalty (configurable)
-
-## Why currency matters (Steam vs CNY venues)
-
-Steam users can list/price in local currencies and Steam applies an exchange rate (updated daily) when currencies differ. 
-Steam Wallet funds are tied to the account and not withdrawable, meaning “Steam USD” is not the same thing as cash USD.
-
-Chinese venues (commonly BUFF-related marketplaces) are CNY-settled and often show persistent basis vs Western venues,
-creating recurring arbitrage windows.
-
-This project models **official FX** (ECB) and **effective FX** (implied from benchmark basket).
-
-## Quickstart
-
-### 1) Install
-
-```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -e ".[dev]"
-```
-
-### 2) Run the demo
-
-```bash
-cs2arb demo run --prices data/demo_prices.json --listings data/demo_listings.json
-# (air-gapped): add --offline-fx data/demo_ecb_rates.json
-```
-
-### 3) Update ECB FX (optional)
-
-```bash
-cs2arb fx update
-cs2arb fx show --base USD --quote CNY
-cs2arb fx implied --prices data/demo_prices.json --base EUR --quote CNY
-```
-
-### 4) Compute GRP table
-
-```bash
-cs2arb grp compute --prices data/demo_prices.json --out data/grp_out.json
-```
-
-## Repo map
-
-- `docs/case-study.md` – context + framing
-- `docs/architecture.md` – data-flow diagrams (mermaid)
-- `src/cs2_arb/` – package
-  - `fx/` – ECB FX + implied FX basis estimator
-  - `markets/` – adapters (demo JSON adapter included)
-  - `pricing/` – GRP + fee normalization
-  - `scoring/` – opportunity score
-  - `storage/` – sqlite cache
-- `data/` – fixtures (safe, fake-but-plausible numbers)
-
-## Design notes
-
-- Defaults to **ECB daily FX reference rates** via the official XML feed.
-- All prices are treated as **net proceeds** after venue fees (configurable per market).
-- Aggregation uses **weighted median** to avoid one venue/print dominating the price.
-- “Implied FX” is optional and off by default.
 
 ## Disclaimer
 
