@@ -1,0 +1,56 @@
+[
+  {
+    "market": "steam",
+    "item_key": "AK-47|Redline|stattrak=false,souvenir=false|FT|seed=any",
+    "currency": "EUR",
+    "price": "18.50",
+    "ts": "2025-12-28T11:40:00+00:00",
+    "volume_7d": 1200,
+    "spread": 0.03
+  },
+  {
+    "market": "buff163",
+    "item_key": "AK-47|Redline|stattrak=false,souvenir=false|FT|seed=any",
+    "currency": "CNY",
+    "price": "135.00",
+    "ts": "2025-12-28T11:50:00+00:00",
+    "volume_7d": 5000,
+    "spread": 0.02
+  },
+  {
+    "market": "steam",
+    "item_key": "M4A1-S|Printstream|stattrak=false,souvenir=false|MW|seed=any",
+    "currency": "EUR",
+    "price": "98.00",
+    "ts": "2025-12-28T11:35:00+00:00",
+    "volume_7d": 800,
+    "spread": 0.03
+  },
+  {
+    "market": "buff163",
+    "item_key": "M4A1-S|Printstream|stattrak=false,souvenir=false|MW|seed=any",
+    "currency": "CNY",
+    "price": "690.00",
+    "ts": "2025-12-28T11:51:00+00:00",
+    "volume_7d": 4200,
+    "spread": 0.02
+  },
+  {
+    "market": "steam",
+    "item_key": "Karambit|Doppler|stattrak=false,souvenir=false|FN|phase=4",
+    "currency": "EUR",
+    "price": "1850.00",
+    "ts": "2025-12-28T11:25:00+00:00",
+    "volume_7d": 90,
+    "spread": 0.05
+  },
+  {
+    "market": "buff163",
+    "item_key": "Karambit|Doppler|stattrak=false,souvenir=false|FN|phase=4",
+    "currency": "CNY",
+    "price": "12900.00",
+    "ts": "2025-12-28T11:48:00+00:00",
+    "volume_7d": 240,
+    "spread": 0.03
+  }
+]
