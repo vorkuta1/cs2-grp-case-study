@@ -4,12 +4,16 @@ This document details the mathematical framework used for the pricing and scorin
 
 ## 1. Standardization & Currency Layer
 
-### 1.1 Net-of-fees Proceeds
+To make prices comparable across venues, we compute the total cost to acquire (Buyer) and net proceeds realized (Seller).
 
-To make prices comparable across venues, we compute the realizable net floating cash for seller `m` listing item `i`:
-
+**Buy Cost:**
 $$
-p^{net}_{m}(i,t)=FX^{eff}_{c_m\to USD}(t)\cdot\Big(p^{raw}_{m}(i,t)\cdot(1-fee^{sell}_{m})-fee^{fixed}_{m}\Big)
+Cost_{A}(i) = P_{listing} \cdot (1 + fee^{buy}_{A}) + fee^{fixed}_{A}
+$$
+
+**Sell Proceeds:**
+$$
+Proceeds_{B}(i) = P_{market} \cdot (1 - fee^{sell}_{B}) - fee^{fixed}_{B}
 $$
 
 ### 1.2 Effective FX
@@ -101,11 +105,15 @@ This effectively sets a "floor" price for inputs and a "ceiling" for outputs (ar
 
 Rank listings by risk-adjusted profitability.
 
-### 5.1 Raw Edge
+### 5.1 Route Edge (Netback)
+
+We define the edge of a specific **Route** (Buy at Venue A, Sell at Venue B):
 
 $$
-Edge = \frac{P^{model}_{net} - Ask_{net}}{Ask_{net}}
+Edge_{A\to B} = \frac{Proceeds_{B, USD} - Cost_{A, USD}}{Cost_{A, USD}}
 $$
+
+Where $Proceeds$ and $Cost$ are normalized to USD Cash via $FX^{eff}$.
 
 ### 5.2 Haircuts
 
