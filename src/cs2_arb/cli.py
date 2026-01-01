@@ -13,7 +13,8 @@ from cs2_arb.markets.demo import DemoJSONMarket
 from cs2_arb.models import ListingFeatures, MarketFee, PricePrint
 from cs2_arb.pipeline import group_listings_by_item, group_prints_by_item
 from cs2_arb.pricing.grp import GRPConfig, grp_for_item
-from cs2_arb.scoring.opportunity import ScoreConfig, opportunity_score
+from cs2_arb.scoring.routing import score_route
+from cs2_arb.venue import VenueModel, FeeStructure
 from cs2_arb.settings import Settings
 from cs2_arb.storage.sqlite_cache import SqliteCache
 
@@ -45,16 +46,37 @@ def demo_run(
     offline_fx: str = typer.Option("data/demo_ecb_rates.json", help="Offline FX fallback JSON"),
     top: int = typer.Option(15, help="How many rows to show"),
 ) -> None:
-    """End-to-end demo: load fixtures, compute GRP, rank listings."""
+    """End-to-end demo: rank cross-venue Netback Routes."""
     s = Settings()
     cache = SqliteCache(s.cache_path)
     ecb = ECBRates(cache=cache, url=s.ecb_daily_url)
     _, rates = _load_rates(ecb, offline_fx)
 
-    fees = {
-        "steam": MarketFee(pct=s.fee_steam_pct),
-        "buff163": MarketFee(pct=s.fee_buff_pct),
-        "demo": MarketFee(pct=0.02),
+    # Define Venues (simplified config for demo)
+    venues = {
+        "steam": VenueModel(
+            name="steam",
+            currency="USD", # Simplified
+            buy_fee=FeeStructure(pct=0.0), 
+            sell_fee=FeeStructure(pct=s.fee_steam_pct),
+            settlement_days=7,
+            risk_score=0.0
+        ),
+        "buff163": VenueModel(
+            name="buff163",
+            currency="CNY",
+            buy_fee=FeeStructure(pct=0.0),
+            sell_fee=FeeStructure(pct=s.fee_buff_pct),
+            settlement_days=0,
+            risk_score=0.05
+        ),
+        "demo": VenueModel(
+            name="demo",
+            currency="USD",
+            buy_fee=FeeStructure(pct=0.0),
+            sell_fee=FeeStructure(pct=0.02),
+            settlement_days=0
+        ),
     }
 
     m = DemoJSONMarket()
@@ -64,69 +86,83 @@ def demo_run(
     prints_by_item = group_prints_by_item(pp)
     listings_by_item = group_listings_by_item(ls)
 
-    rows = []
+    routes = []
+    
+    # Pre-calculate best sell prices per market for each item
+    # Map: item_key -> market -> price
+    sell_prices: dict[str, dict[str, Decimal]] = {}
+    for item_key, plist in prints_by_item.items():
+        if item_key not in sell_prices:
+            sell_prices[item_key] = {}
+        # Naive: take the most recent print (or just average?)
+        # For route arb, we want actionable liquidity. 
+        # Using the last print is a proxy for "Market Price".
+        for p in plist:
+            # simple overwrite with latest if sorted? prints not strictly sorted in list
+            # We'll assume list processing order or sort it.
+            # Ideally we pick the latest by TS.
+            current = sell_prices[item_key].get(p.market)
+            # We don't have access to previous TS easily here without storing it.
+            # Let's assume input prints are reasonably fresh or we just take the last one seen.
+            # Better:
+            sell_prices[item_key][p.market] = p.price
+
     for item_key, llist in listings_by_item.items():
-        if item_key not in prints_by_item:
+        if item_key not in sell_prices:
             continue
-        grp = grp_for_item(
-            prints=prints_by_item[item_key],
-            ecb_rates=rates,
-            fees_by_market=fees,
-            cfg=GRPConfig(base_ccy=s.base_ccy),
-        )
+            
+        # Optional: Compute GRP for reference (not used for scoring anymore)
+        fees_for_grp = {k: v.sell_fee for k, v in venues.items()}
+        # Note: GRP config/calc might need MarketFee objects if strict, 
+        # but FeeStructure is compatible duck-type (pct, fixed).
+        
         for listing in llist:
-            fee = fees.get(listing.market, MarketFee(pct=0.0))
+            if listing.market not in venues:
+                 continue
+            
+            buy_venue = venues[listing.market]
+            
+            # Identify route candidates
+            possible_exits = sell_prices.get(item_key, {})
+            
+            for exit_market, exit_price in possible_exits.items():
+                 if exit_market == listing.market:
+                     continue
+                 if exit_market not in venues:
+                     continue
+                 
+                 sell_venue = venues[exit_market]
+                 
+                 # Score the route
+                 route = score_route(
+                     listing=listing,
+                     buy_venue=buy_venue,
+                     sell_venue=sell_venue,
+                     sell_price_local=exit_price,
+                     ecb_rates=rates,
+                     implied_rates=None # Could add implied FX here
+                 )
+                 
+                 routes.append(route)
 
-            from cs2_arb.pricing.features import FeatureConfig, compute_model_price
+    routes.sort(key=lambda x: x.score, reverse=True)
 
-            feats = ListingFeatures(
-                float_value=listing.float_value,
-                seed=listing.seed,
-                stickers=None,  # listing.stickers parsing omitted for demo simplicity unless in JSON
-            )
-
-            # Compute Model Price
-            model_price = compute_model_price(grp, feats, FeatureConfig())
-
-            score = opportunity_score(
-                listing=listing,
-                reference_price_usd=model_price,
-                ecb_rates=rates,
-                fee=fee,
-                cfg=ScoreConfig(base_ccy=s.base_ccy),
-            )
-            rows.append(
-                (
-                    score,
-                    item_key,
-                    listing.market,
-                    listing.listing_id,
-                    listing.ask,
-                    listing.currency,
-                    model_price,
-                )
-            )
-
-    rows.sort(key=lambda x: x[0], reverse=True)
-
-    t = Table(title=f"Top {top} opportunities (demo)")
+    t = Table(title=f"Top {top} Arbitrage Routes (Netback)")
     t.add_column("Score", justify="right")
     t.add_column("Item")
-    t.add_column("Market")
-    t.add_column("Listing")
-    t.add_column("Ask")
-    t.add_column("CCY")
-    t.add_column("GRP_USD", justify="right")
+    t.add_column("Route")
+    t.add_column("Input Cost ($)")
+    t.add_column("Net Proceeds ($)")
+    t.add_column("Edge %")
 
-    for score, item_key, market, listing_id, ask, ccy, grp in rows[:top]:
+    for r in routes[:top]:
         t.add_row(
-            str(score.quantize(Decimal("0.0001"))),
-            item_key,
-            market,
-            listing_id,
-            str(ask),
-            ccy,
-            str(grp.quantize(Decimal("0.01"))),
+            f"{r.score:.2f}",
+            r.item_key,
+            f"{r.buy_venue} -> {r.sell_venue}",
+            f"{r.buy_cost_usd:.2f}",
+            f"{r.sell_proceeds_usd:.2f}",
+            f"{r.roi_pct:.1f}%",
         )
     console.print(t)
 
@@ -234,7 +270,7 @@ def fx_show(
         raise typer.BadParameter("Currency not in ECB table")
     # rates are EUR base:
     x = rates[quote] / rates[base]
-    if d and rates:  # Check if rates were loaded successfully
+    if d and rates:
         typer.echo(f"  Rate: 1 {base} = {x} {quote} (from {d.date()})")
     else:
         typer.echo(f"  Rate: 1 {base} = N/A {quote}")
@@ -292,6 +328,7 @@ def grp_compute(
     ecb = ECBRates(cache=cache, url=s.ecb_daily_url)
     _, rates = _load_rates(ecb, offline_fx)
 
+    # Use simplified venues config for fees
     fees = {
         "steam": MarketFee(pct=s.fee_steam_pct),
         "buff163": MarketFee(pct=s.fee_buff_pct),

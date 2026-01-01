@@ -13,3 +13,8 @@ dist/
 .env
 .DS_Store
 data/*.db
+
+# Local Workspace
+context.md
+docs/references.md
+scripts/

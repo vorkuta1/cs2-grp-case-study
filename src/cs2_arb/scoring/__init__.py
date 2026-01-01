@@ -1,2 +1,1 @@
-from .opportunity import ScoreConfig as ScoreConfig
-from .opportunity import opportunity_score as opportunity_score
+from .routing import score_route as score_route

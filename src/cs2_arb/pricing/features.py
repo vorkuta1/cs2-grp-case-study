@@ -24,7 +24,10 @@ def pattern_multiplier(seed: int | None, cfg: FeatureConfig) -> Decimal:
 
 
 def sticker_multiplier(
-    stickers: list[dict] | None, base_price: Decimal, cfg: FeatureConfig
+    stickers: list[dict] | None,
+    base_price: Decimal,
+    cfg: FeatureConfig,
+    sticker_prices: dict[int, Decimal] | None = None,
 ) -> Decimal:
     """
     Compute sticker multiplier based on the formula:
@@ -35,19 +38,26 @@ def sticker_multiplier(
     - sigma(S): consistency/synergy score (e.g., all same sticker)
     - p_sticker: individual price of applied stickers
     - B_sw: base price of the skin
-
-    Assumes each sticker dictionary in the list contains a 'price' field.
     """
     if not stickers or base_price <= 0:
         return Decimal("1.0")
 
-    total_sticker_price = sum((Decimal(str(s.get("price", 0))) for s in stickers), Decimal("0"))
+    total_sticker_price = Decimal("0")
+    for s in stickers:
+        price = Decimal("0")
+        s_id = s.get("id")
+        if sticker_prices and s_id is not None and s_id in sticker_prices:
+            price = sticker_prices[s_id]
+        else:
+            # Fallback to embedded price if present (legacy)
+            price = Decimal(str(s.get("price", 0)))
+        total_sticker_price += price
+
     if total_sticker_price == 0:
         return Decimal("1.0")
 
     # Consistency/Synergy score (sigma).
     # 1.0 if 4x same sticker, 0.5 otherwise.
-    # Future improvement: analyze slot positions and sticker IDs for specific combinations.
     sigma = Decimal("0.5")
     if len(stickers) >= 4:
         # Check if all same id
@@ -60,7 +70,10 @@ def sticker_multiplier(
 
 
 def compute_model_price(
-    base_grp: Decimal, features: ListingFeatures, cfg: FeatureConfig
+    base_grp: Decimal,
+    features: ListingFeatures,
+    cfg: FeatureConfig,
+    sticker_prices: dict[int, Decimal] | None = None,
 ) -> Decimal:
     """
     P_model = B * M_float * M_pattern * M_stickers
@@ -74,6 +87,6 @@ def compute_model_price(
 
     # 3. Stickers
     # stickers list of dicts.
-    m_sticker = sticker_multiplier(features.stickers, base_grp, cfg)
+    m_sticker = sticker_multiplier(features.stickers, base_grp, cfg, sticker_prices)
 
     return base_grp * m_float * m_pattern * m_sticker
