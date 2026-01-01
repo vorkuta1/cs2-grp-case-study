@@ -36,30 +36,27 @@ def score_route(
     # 2. Calculate Sell Proceeds in USD (Cash)
     #    Proceeds in exit currency -> USD Cash
     proceeds_native = sell_proceeds(sell_price_local, sell_venue)
-    
-    # If Selling on a venue with restricted currency (e.g. Steam Wallet), 
+
+    # If Selling on a venue with restricted currency (e.g. Steam Wallet),
     # and we want "USD Cash" out, we need to price the "Cash out" rail.
     # We simulate this by checking if venue.currency != "USD_cash" (or derived).
     # For now, we assume normalize_currency handles the rail friction if we ask for USD.
-    
-    # We assume 'USD' implies USD Cash. 
+
+    # We assume 'USD' implies USD Cash.
     proceeds_usd = normalize_currency(
         proceeds_native, sell_venue.currency, "USD", ecb_rates, implied_rates, rail_friction=0.02
     )
 
     # 3. Edge
-    if cost_usd == 0:
-        edge_raw = -1.0
-    else:
-        edge_raw = float((proceeds_usd - cost_usd) / cost_usd)
+    edge_raw = -1.0 if cost_usd == 0 else float((proceeds_usd - cost_usd) / cost_usd)
 
     # 4. Haircuts
-    
+
     # Liquidity: Time to sell
     # Heuristic: If we have volume data, use it. Else assume default.
     # We don't have volume in the generic call here, defaulting to TAU_SELL.
     # In a real system, we'd estimate TTS based on demand.
-    tts_est = 3.0 # placeholder
+    tts_est = 3.0  # placeholder
     liquidity_haircut = math.exp(-tts_est / TAU_SELL)
 
     # Lockup: Settlement days
@@ -68,13 +65,13 @@ def score_route(
 
     # Risk: Venue trust
     risk_haircut = 1.0 - sell_venue.risk_score
-    
+
     # 5. Final Score
     # Score = Edge * H_liq * H_lock * H_risk
     # If edge is negative, haircuts define how "clean" the loss is (makes less sense),
-    # usually we care about positive edge. 
+    # usually we care about positive edge.
     # We preserve the sign of the edge.
-    
+
     score = edge_raw * liquidity_haircut * lockup_haircut * risk_haircut
 
     return Route(

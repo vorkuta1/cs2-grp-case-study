@@ -14,9 +14,9 @@ from cs2_arb.models import ListingFeatures, MarketFee, PricePrint
 from cs2_arb.pipeline import group_listings_by_item, group_prints_by_item
 from cs2_arb.pricing.grp import GRPConfig, grp_for_item
 from cs2_arb.scoring.routing import score_route
-from cs2_arb.venue import VenueModel, FeeStructure
 from cs2_arb.settings import Settings
 from cs2_arb.storage.sqlite_cache import SqliteCache
+from cs2_arb.venue import FeeStructure, VenueModel
 
 app = typer.Typer(no_args_is_help=True)
 console = Console()
@@ -56,11 +56,11 @@ def demo_run(
     venues = {
         "steam": VenueModel(
             name="steam",
-            currency="USD", # Simplified
-            buy_fee=FeeStructure(pct=0.0), 
+            currency="USD",  # Simplified
+            buy_fee=FeeStructure(pct=0.0),
             sell_fee=FeeStructure(pct=s.fee_steam_pct),
             settlement_days=7,
-            risk_score=0.0
+            risk_score=0.0,
         ),
         "buff163": VenueModel(
             name="buff163",
@@ -68,14 +68,14 @@ def demo_run(
             buy_fee=FeeStructure(pct=0.0),
             sell_fee=FeeStructure(pct=s.fee_buff_pct),
             settlement_days=0,
-            risk_score=0.05
+            risk_score=0.05,
         ),
         "demo": VenueModel(
             name="demo",
             currency="USD",
             buy_fee=FeeStructure(pct=0.0),
             sell_fee=FeeStructure(pct=0.02),
-            settlement_days=0
+            settlement_days=0,
         ),
     }
 
@@ -87,7 +87,7 @@ def demo_run(
     listings_by_item = group_listings_by_item(ls)
 
     routes = []
-    
+
     # Pre-calculate best sell prices per market for each item
     # Map: item_key -> market -> price
     sell_prices: dict[str, dict[str, Decimal]] = {}
@@ -95,13 +95,13 @@ def demo_run(
         if item_key not in sell_prices:
             sell_prices[item_key] = {}
         # Naive: take the most recent print (or just average?)
-        # For route arb, we want actionable liquidity. 
+        # For route arb, we want actionable liquidity.
         # Using the last print is a proxy for "Market Price".
         for p in plist:
             # simple overwrite with latest if sorted? prints not strictly sorted in list
             # We'll assume list processing order or sort it.
             # Ideally we pick the latest by TS.
-            current = sell_prices[item_key].get(p.market)
+            # current = sell_prices[item_key].get(p.market)
             # We don't have access to previous TS easily here without storing it.
             # Let's assume input prints are reasonably fresh or we just take the last one seen.
             # Better:
@@ -110,40 +110,40 @@ def demo_run(
     for item_key, llist in listings_by_item.items():
         if item_key not in sell_prices:
             continue
-            
+
         # Optional: Compute GRP for reference (not used for scoring anymore)
-        fees_for_grp = {k: v.sell_fee for k, v in venues.items()}
-        # Note: GRP config/calc might need MarketFee objects if strict, 
+        # fees_for_grp = {k: v.sell_fee for k, v in venues.items()}
+        # Note: GRP config/calc might need MarketFee objects if strict,
         # but FeeStructure is compatible duck-type (pct, fixed).
-        
+
         for listing in llist:
             if listing.market not in venues:
-                 continue
-            
+                continue
+
             buy_venue = venues[listing.market]
-            
+
             # Identify route candidates
             possible_exits = sell_prices.get(item_key, {})
-            
+
             for exit_market, exit_price in possible_exits.items():
-                 if exit_market == listing.market:
-                     continue
-                 if exit_market not in venues:
-                     continue
-                 
-                 sell_venue = venues[exit_market]
-                 
-                 # Score the route
-                 route = score_route(
-                     listing=listing,
-                     buy_venue=buy_venue,
-                     sell_venue=sell_venue,
-                     sell_price_local=exit_price,
-                     ecb_rates=rates,
-                     implied_rates=None # Could add implied FX here
-                 )
-                 
-                 routes.append(route)
+                if exit_market == listing.market:
+                    continue
+                if exit_market not in venues:
+                    continue
+
+                sell_venue = venues[exit_market]
+
+                # Score the route
+                route = score_route(
+                    listing=listing,
+                    buy_venue=buy_venue,
+                    sell_venue=sell_venue,
+                    sell_price_local=exit_price,
+                    ecb_rates=rates,
+                    implied_rates=None,  # Could add implied FX here
+                )
+
+                routes.append(route)
 
     routes.sort(key=lambda x: x.score, reverse=True)
 

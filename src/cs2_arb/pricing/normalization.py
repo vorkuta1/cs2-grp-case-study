@@ -32,11 +32,11 @@ def normalize_currency(
 ) -> Decimal:
     """
     Converts amount from source_ccy to target_ccy using the best available rate.
-    
+
     Priority:
     1. Implied FX (if available for the pair)
     2. ECB Spot Rate
-    
+
     Then applies rail_friction (e.g. 0.02 for 2% conversion loss).
     """
     if source_ccy == target_ccy:
@@ -53,7 +53,7 @@ def normalize_currency(
                 # 2. Fallback to ECB Spot
                 converted = convert(amount, source_ccy, target_ccy, ecb_rates)
         else:
-             # 2. Fallback to ECB Spot
+            # 2. Fallback to ECB Spot
             converted = convert(amount, source_ccy, target_ccy, ecb_rates)
 
     # Apply friction (only on cross-currency OR rail usage)
@@ -61,5 +61,5 @@ def normalize_currency(
     if rail_friction > 0:
         friction_mult = Decimal(str(1.0 - rail_friction))
         return converted * friction_mult
-        
+
     return converted

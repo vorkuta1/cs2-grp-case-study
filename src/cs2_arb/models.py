@@ -53,20 +53,20 @@ class Route:
     item_key: str
     buy_venue: str
     sell_venue: str
-    
+
     # Prices in USD (or Numeraire)
     buy_cost_usd: Decimal
     sell_proceeds_usd: Decimal
-    
+
     # Metrics
     edge_raw: float  # (proceeds - cost) / cost
-    roi_pct: float   # edge_raw * 100
-    
+    roi_pct: float  # edge_raw * 100
+
     # Haircuts (0.0 = no penalty, 1.0 = full penalty / worthless)
     liquidity_haircut: float
     lockup_haircut: float
     risk_haircut: float
-    
+
     # Final Score
     score: float
 
