@@ -42,7 +42,7 @@ def normalize_currency(
     if source_ccy == target_ccy:
         converted = amount
     else:
-        # 1. Try Implied FX
+        # Prioritize Implied FX -> ECB Spot Fallback
         if implied_rates:
             pair = (source_ccy, target_ccy)
             if pair in implied_rates:
@@ -50,10 +50,8 @@ def normalize_currency(
                 converted = amount * rate
                 # Skip ECB Fallback if Implied found
             else:
-                # 2. Fallback to ECB Spot
                 converted = convert(amount, source_ccy, target_ccy, ecb_rates)
         else:
-            # 2. Fallback to ECB Spot
             converted = convert(amount, source_ccy, target_ccy, ecb_rates)
 
     # Apply friction (only on cross-currency OR rail usage)

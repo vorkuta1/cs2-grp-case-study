@@ -53,10 +53,9 @@ def score_route(
     # 4. Haircuts
 
     # Liquidity: Time to sell
-    # Heuristic: If we have volume data, use it. Else assume default.
-    # We don't have volume in the generic call here, defaulting to TAU_SELL.
-    # In a real system, we'd estimate TTS based on demand.
-    tts_est = 3.0  # placeholder
+    # In a full production system, we would estimate TTS based on demand/volume.
+    # Here we default to a heuristic.
+    tts_est = 3.0
     liquidity_haircut = math.exp(-tts_est / TAU_SELL)
 
     # Lockup: Settlement days
@@ -67,11 +66,6 @@ def score_route(
     risk_haircut = 1.0 - sell_venue.risk_score
 
     # 5. Final Score
-    # Score = Edge * H_liq * H_lock * H_risk
-    # If edge is negative, haircuts define how "clean" the loss is (makes less sense),
-    # usually we care about positive edge.
-    # We preserve the sign of the edge.
-
     score = edge_raw * liquidity_haircut * lockup_haircut * risk_haircut
 
     return Route(
