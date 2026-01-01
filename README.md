@@ -1,15 +1,7 @@
 # CS2 GRP Case Study
 
-A case study for **multi-venue, multi-currency price normalization** and opportunity ranking in an illiquid market.
+A case study ranking **cross-venue buy→sell routes** in CS2 skins by **cash netback after FX basis, fees, lockups, and liquidity haircuts**, with optional pricers for floats/patterns and trade-up manufacturing anchors.
 
-The domain is CS2 skins; the value is the **market understanding + data engineering**:
-FX normalization, fees, robust aggregation, caching, and a clean module boundary design.
-
-**New in v0.2**:
-
-- **Feature Model**: Tri-phase float curves, pattern tiers, and sticker valuations.
-- **Manufacturing Anchor**: Input-basket economics for trade-up contracts ("crafting").
-- **Simulated Markets**: File-based adapters for Steam/Buff to enable consistent testing.
 
 ## Why it’s relevant to commodities / physical trade
 
@@ -38,9 +30,8 @@ This repo demonstrates the same system design decisions: **normalize, de-bias, s
    - _Float_: Tri-phase curve (Perfection, Wear Buckets, High-Float).
    - _Pattern_: Tier-based multipliers (e.g., Blue Gem).
    - _Stickers_: Scrap value + Synergy premium.
-5. Score listings with an **Opportunity Score**:
-   $Score = Edge \cdot H_{liquidity} \cdot H_{lock} \cdot H_{risk}$
-   - _Edge_: Model Price vs Net Ask.
+4. **Score Routes** (Netback Edge):
+   $Edge = \frac{SellProceeds_B - BuyCost_A}{BuyCost_A}$
    - _Haircuts_: Time-to-sell, inventory lockup, and venue risk.
 
 > Full mathematical details in [`docs/quant-model.md`](docs/quant-model.md).
@@ -90,7 +81,7 @@ uv run cs2arb manufacturing analyze --input-prices "10,10,10" --output-prices "5
   - `fx/` – ECB FX + implied FX basis estimator
   - `markets/` – adapters (demo, steam, buff163)
   - `pricing/` – GRP, fee normalization, float curves, manufacturing
-  - `scoring/` – opportunity score
+  - `scoring/` – route scoring (netback & basis)
   - `storage/` – sqlite cache
 - `data/` – fixtures (safe, fake-but-plausible numbers)
 

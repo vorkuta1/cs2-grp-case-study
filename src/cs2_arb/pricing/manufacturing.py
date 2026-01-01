@@ -59,8 +59,10 @@ def calculate_output_ev(
     if total_prob == 0:
         return Decimal("0")
 
-    # Normalize prob if not 1.0? Usually trade ups are precise.
-    # We assume probs sum to 1.0 or we normalize.
+    # Normalize if probs don't sum to 1.0
+    if not (0.99 <= total_prob <= 1.01):
+        ev = ev / Decimal(str(total_prob))
+
     return ev
 
 

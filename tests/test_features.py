@@ -4,7 +4,7 @@ from cs2_arb.pricing.curves import FloatCurveParams, float_multiplier
 from cs2_arb.pricing.features import FeatureConfig, pattern_multiplier
 
 
-def test_float_multiplier_phases():
+def test_float_multiplier_phases() -> None:
     params = FloatCurveParams(
         has_high_float_premium=True, f1_cutoff=Decimal("0.02"), f2_cutoff=Decimal("0.45")
     )
@@ -28,7 +28,7 @@ def test_float_multiplier_phases():
     assert m_high > Decimal("1.0")
 
 
-def test_pattern_multiplier():
+def test_pattern_multiplier() -> None:
     cfg = FeatureConfig(pattern_multipliers={661: Decimal("5.0"), 387: Decimal("10.0")})
 
     # Tier 1 seed
