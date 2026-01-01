@@ -49,7 +49,7 @@ def sticker_multiplier(
         if sticker_prices and s_id is not None and s_id in sticker_prices:
             price = sticker_prices[s_id]
         else:
-            # Fallback to embedded price if present (legacy)
+            # Fallback to embedded price if present
             price = Decimal(str(s.get("price", 0)))
         total_sticker_price += price
 
@@ -86,7 +86,6 @@ def compute_model_price(
     m_pattern = pattern_multiplier(features.seed, cfg)
 
     # 3. Stickers
-    # stickers list of dicts.
     m_sticker = sticker_multiplier(features.stickers, base_grp, cfg, sticker_prices)
 
     return base_grp * m_float * m_pattern * m_sticker

@@ -94,27 +94,13 @@ def demo_run(
     for item_key, plist in prints_by_item.items():
         if item_key not in sell_prices:
             sell_prices[item_key] = {}
-        # Naive: take the most recent print (or just average?)
-        # For route arb, we want actionable liquidity.
-        # Using the last print is a proxy for "Market Price".
+        # Take the most recent print as the current market price
         for p in plist:
-            # simple overwrite with latest if sorted? prints not strictly sorted in list
-            # We'll assume list processing order or sort it.
-            # Ideally we pick the latest by TS.
-            # current = sell_prices[item_key].get(p.market)
-            # We don't have access to previous TS easily here without storing it.
-            # Let's assume input prints are reasonably fresh or we just take the last one seen.
-            # Better:
             sell_prices[item_key][p.market] = p.price
 
     for item_key, llist in listings_by_item.items():
         if item_key not in sell_prices:
             continue
-
-        # Optional: Compute GRP for reference (not used for scoring anymore)
-        # fees_for_grp = {k: v.sell_fee for k, v in venues.items()}
-        # Note: GRP config/calc might need MarketFee objects if strict,
-        # but FeeStructure is compatible duck-type (pct, fixed).
 
         for listing in llist:
             if listing.market not in venues:
