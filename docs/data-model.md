@@ -41,6 +41,33 @@ Real production systems will normalize across these dimensions. The `Listing` mo
 - **Pattern Seed**: Integer seed for pattern-based skins (Case Hardened, Doppler).
 - **Stickers**: List of applied stickers with slot and wear info.
 
+## VenueModel
+
+Encapsulates the friction and risk profile of a marketplace.
+
+Fields:
+- `name`: unique identifier
+- `currency`: base settlement currency (e.g. `USD_steam_wallet`)
+- `buy_fee`: `(pct, fixed)` structure for buyer-paid fees
+- `sell_fee`: `(pct, fixed)` structure for seller-paid fees
+- `settlement_days`: lockup period
+- `risk_score`: 0.0-1.0 probability of failure/scam
+- `rail_options`: supported withdrawal rails
+
+## Route
+
+A scored arbitrage path from Buy Venue A to Sell Venue B.
+
+Fields:
+- `buy_venue`, `sell_venue`: names
+- `buy_cost_usd`: total normalized cost
+- `sell_proceeds_usd`: total normalized net proceeds
+- `edge_raw`: simple ROI percentage
+- `score`: final risk-adjusted quality score
+- `liquidity_haircut`: penalty for time-to-sell
+- `lockup_haircut`: penalty for capital cost
+- `risk_haircut`: penalty for venue trust
+
 ## Feature Logic
 
 The `ListingFeatures` class encapsulates these attributes to drive the **Feature Model**, which adjusts the Global Reference Price (GRP) to a specific **Model Price** for the item instance. See [`docs/quant-model.md`](quant-model.md) for the mathematical details.
