@@ -7,11 +7,13 @@ This document details the mathematical framework used for the pricing and scorin
 To make prices comparable across venues, we compute the total cost to acquire (Buyer) and net proceeds realized (Seller).
 
 **Buy Cost:**
+
 $$
 Cost_{A}(i) = P_{listing} \cdot (1 + fee^{buy}_{A}) + fee^{fixed}_{A}
 $$
 
 **Sell Proceeds:**
+
 $$
 Proceeds_{B}(i) = P_{market} \cdot (1 - fee^{sell}_{B}) - fee^{fixed}_{B}
 $$
